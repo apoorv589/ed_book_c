@@ -8,20 +8,21 @@ history ()
 */
 class Booking extends MY_Controller
 {
-	function __construct()
+      function __construct()
 	{
 		parent::__construct(array('emp','stu'));
-		$this->addJS("edc_booking/booking.js");
+      		$this->addJS("edc_booking/booking.js");
 
 		$this->load->model('edc_booking/edc_booking_model');
 		$this->load->model ('user_model');
 
 		date_default_timezone_set('Asia/Kolkata');
 	}
-
+      
 	function auth_is($auth)
 	{
-		foreach($this->session->userdata('auth') as $a){
+		foreach($this->session->userdata('auth') as $a)
+		{
 			if($a == $auth)
 				return;
 		}
@@ -35,13 +36,15 @@ class Booking extends MY_Controller
 		//if dept is academic then hod otherwise hos for nonacademic
 		if($this->edc_booking_model->is_academic($dept_id))	//returns true if academic dept
 			return 'hod';
-		else return 'hos';
+		   else
+		    return 'hos';
 	}
-
+    // edc booking form; 
 	function form ()
 	{
-		$data['auth'] = $this->session->userdata('auth')[0];	//either emp or stu		
 		$this->drawHeader('Executive Development Center');
+		$data['auth'] = $this->session->userdata('auth')[0];	//either emp or stu
+
 		$this->load->view('edc_booking/booking_form', $data);
 		$this->drawFooter();
 	}
@@ -49,6 +52,7 @@ class Booking extends MY_Controller
 	//receive application details
 	function insert_edc_registration_details ()
 	{
+
 		$data = array(
 				'app_num' => 'EDC'.time(),
 			  	'app_date' => date('Y-m-d:H-i-s'), //actually its 19800 for IST
@@ -62,17 +66,15 @@ class Booking extends MY_Controller
 			  	'suite_AC' => $this->input->post('suite_AC'),
 			  	'boarding_required' => $this->input->post('boarding_required'),
 			  	'school_guest' => $this->input->post('school_guest')
-		);
-		if($data['pusrpose']==0)
-		{
-			$data['purpose']="personal";
-		}
+		    );
+            if($data['purpose']==0)
+            $data['purpose']="personal";   
 		$data['tariff'] = $this->edc_booking_model->get_current_tariff();
 		$checkin = $this->input->post('checkin').' '.$this->input->post('checkin_time');
 		$data['check_in'] = DateTime::createFromFormat('Y-m-d H:i A', $checkin)->format('Y-m-d H:i:s');
 		$checkout = $this->input->post('checkout').' '.$this->input->post('checkout_time');
 		$data['check_out'] = DateTime::createFromFormat('Y-m-d H:i A', $checkout)->format('Y-m-d H:i:s');
-
+          
 		if($data['school_guest'] == '1')
 		{
 			//format file, its filename, filepath, validate (returns upload array)
@@ -92,7 +94,7 @@ class Booking extends MY_Controller
 			$res = $this->user_model->getUsersByDeptAuth('all', 'pce_da5');
 			$pce_da5 = '';
 			foreach ($res as $row) //assuming only 1 EDC CTK
-				$pce_da5 = $row->id;
+			$pce_da5 = $row->id;
 			$this->notification->notify ($pce_da5, "pce_da5", "EDC Room Allotment Request", "EDC Room Booking Request (Application No. : ".$data['app_num']." ) is Pending for Room Allotment.", "edc_booking/booking_request/notification_handler/".$data['app_num']."/pce_da5", "");
 		}
 
@@ -111,7 +113,7 @@ class Booking extends MY_Controller
 		//for student
 		if ($this->session->userdata('auth')[0] == 'stu') {
 			$data['dsw_status'] = 'Pending';
-
+            
 			$res = $this->user_model->getUsersByDeptAuth('all', 'dsw');
 			$dsw = '';
 			foreach ($res as $row) //only 1 DSW
@@ -125,7 +127,7 @@ class Booking extends MY_Controller
 		redirect('edc_booking/booking/track_status');
 	}
 
-	//for pce_da5 other bookings
+	//for pce_da5 other bookings form;
 	function other_bookings_form() {
 		$this->drawHeader('Executive Development Center');
 		$this->load->view('edc_booking/other_bookings_form');
@@ -172,15 +174,16 @@ class Booking extends MY_Controller
 		$this->session->set_flashdata('flashSuccess','Room Allotment request has been successfully sent.');
 		redirect('home');
 	}
-
+     //tracking booking status;
 	function track_status()
 	{
 		$this->load->model('edc_booking/edc_booking_model');
 		$res = $this->edc_booking_model->get_pending_booking_details($this->session->userdata('id'));
 
 		$total_rows = count($res);
-
-		if($total_rows === 0){
+           // no any application to track;
+		if($total_rows === 0)
+		{
 			$this->session->set_flashdata('flashError','You don\'t have any application to track.');
 			redirect('edc_booking/booking/history');
 		}
@@ -207,7 +210,7 @@ class Booking extends MY_Controller
  		$this->load->view('edc_booking/booking_track_status', $data);
 		$this->drawFooter();
 	}
-
+     //get booking history
 	function history()
 	{
 		$this->load->model('edc_booking/edc_booking_model');
@@ -225,14 +228,14 @@ class Booking extends MY_Controller
 			$data_array_approved[$sno][$j++] = date('j M Y g:i A', strtotime($row['app_date']));
 			$data_array_approved[$sno][$j++] = $row['no_of_guests'];
 			foreach($this->edc_booking_model->get_booking_details($row['app_num']) as $status)
-				$data_array_approved[$sno][$j++] = array('hod_status' => $status['hod_status'],
+			$data_array_approved[$sno][$j++] = array('hod_status' => $status['hod_status'],
 															'dsw_status' => $status['dsw_status'],
 															'pce_status' => $status['pce_status']);
 			$data_array_approved[$sno]['guest_checked_in'] = count($this->edc_booking_model->get_guest_details($row['app_num']));
 			$sno++;
 		}
-
-		$res = $this->edc_booking_model->get_booking_history ($this->session->userdata('id'), "Rejected");
+             
+		$res = $this->edc_booking_model->get_booking_history($this->session->userdata('id'), "Rejected");
 		$total_rows_rejected = count($res);
 		$data_array_rejected = array();
 		$sno = 1;
@@ -246,7 +249,7 @@ class Booking extends MY_Controller
 			$data_array_rejected[$sno][$j++] = "";
 			if ($row['hod_status'] == "Rejected")
 			{
-				if($this->sah_booking_model->is_academic($this->session->userdata('dept_id')))
+				if($this->edc_booking_model->is_academic($this->session->userdata('dept_id')))
 					$data_array_rejected[$sno][4] = "Head of Department";
 				else $data_array_rejected[$sno][4] = "Head of Section";
 			}
@@ -286,7 +289,7 @@ class Booking extends MY_Controller
 		$this->load->view('edc_booking/booking_history',$data);
 		$this->drawFooter();
 	}
-
+     
 	private function upload_file($name ='', $app_num='')
 	{
 		$config['upload_path'] = 'assets/files/edc_booking/'.$this->session->userdata('id').'/';
@@ -313,7 +316,7 @@ class Booking extends MY_Controller
 
 			$config['file_name'] = $filename;
 
-			if(!is_dir($config['upload_path']))	//create the folder if it not already exists
+			if(!is_dir($config['upload_path']))	//create the folder if it's not already exists
 			{
 				mkdir($config['upload_path'],0777,TRUE);
 			}

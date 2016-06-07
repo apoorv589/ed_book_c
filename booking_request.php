@@ -13,7 +13,7 @@ class Booking_request extends MY_Controller
 		$this->load->model('edc_booking/edc_allotment_model');
 		$this->load->model('user_model');
 	}
-
+      
 	function auth_is($auth)
 	{
 		foreach($this->session->userdata('auth') as $a){
@@ -37,7 +37,7 @@ class Booking_request extends MY_Controller
 	function app_list($auth)
 	{
 		$this->auth_is($auth);
-
+         
 		if($auth == 'dsw' || $auth == 'pce')
 			$dept_id = 'all';
 		else $dept_id = $this->session->userdata('dept_id');
@@ -56,7 +56,7 @@ class Booking_request extends MY_Controller
 			$data_array_pending[$sno][$j++] = $row['no_of_guests'];
 			$sno++;
 		}
-
+           
 		if($auth == 'hod' || $auth == 'hos' || $auth == 'dsw' || $auth == 'pce')
 		{
 			$res = $this->edc_booking_model->get_requests ("Cancel", $auth, $dept_id);
@@ -207,9 +207,10 @@ class Booking_request extends MY_Controller
 	//this function displays the application details for respective auths
 	//can be accessed by clicking on the application number link in app list
 	function details ($app_num, $auth)
-	{	
+	{
 		$this->auth_is($auth);
 		$res = $this->edc_booking_model->get_booking_details($app_num);
+		 //if app num is not match with table(get_booking_details);
 		if(!count($res)) {
 			$this->session->set_flashdata('flashError', 'Application '.$app_num.' is not valid!');
 			redirect('home');
@@ -322,7 +323,7 @@ class Booking_request extends MY_Controller
 		$this->auth_is($auth);
 		$status = $this->input->post ('status');
 		$reason = $this->input->post ('reason');
-
+         
 		if ($status == "Approved")
 			$reason = "NULL";
 
@@ -337,9 +338,9 @@ class Booking_request extends MY_Controller
 				$this->session->set_flashdata('flashError','Cannot complete action! Applicant has cancelled booking request.');
 				redirect('edc_booking/booking_request/app_list/'.$auth);
 		}
-
+          
 		$this->edc_booking_model->update_action($app_num, $auth, $status, $reason);
-
+          
 		$this_user = '';
 		$to_id = ''; //this is the id to which notification is to be sent
 		$to_auth = '';
@@ -349,9 +350,9 @@ class Booking_request extends MY_Controller
 		$user_auth = '';
 
 		//set user_auth
-		if($this->user_model->getById($user_id)->auth_id == 'stu')
+		if($this->user_model->getById($user_id)->auth_id == 'stu') // for student;
 			$user_auth = 'stu';
-		else $user_auth = 'emp';
+		else $user_auth = 'emp';//for employee
 
 		//set this_user
 		switch($auth)
@@ -643,7 +644,8 @@ class Booking_request extends MY_Controller
 		else if($auth == 'hod' || $auth == 'hos'|| $auth == 'dsw')
 		{
 			//if after approval of cancellation by hod/hos or dsw, ctk is yet to allot rooms, then drop request
-			if($data['ctk_allotment_status'] == 'Pending'){
+			if($data['ctk_allotment_status'] == 'Pending')
+			{
 				$this->edc_booking_model->cancel_request($app_num);
 				$this->notification->notify($data['user_id'], $user_auth, 'EDC Booking Cancellation', 'Request for EDC Room Booking Cancellation (Application No. : '.$app_num.') has been Approved successfully.', 'edc_booking/booking_request/details/'.$app_num.'/'.$user_auth);
 			}

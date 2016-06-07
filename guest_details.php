@@ -10,10 +10,11 @@ class Guest_details extends MY_Controller {
 
 		date_default_timezone_set('Asia/Kolkata');
 	}
-
+     
 	function auth_is($auth)
 	{
-		foreach($this->session->userdata('auth') as $a){
+		foreach($this->session->userdata('auth') as $a)
+		{
 			if($a == $auth)
 				return;
 		}
@@ -23,7 +24,7 @@ class Guest_details extends MY_Controller {
 
 	function index()
 	{
-		$this->auth_is('pce_da5');
+		$this->auth_is('pce_da5');//for pce_da5;
 		$res = $this->edc_booking_model->get_allotted_applications();
 
 		$total_rows_approved = count($res);
@@ -48,7 +49,7 @@ class Guest_details extends MY_Controller {
 		$this->load->view('edc_booking/show_alloted_applications', $data);
 		$this->drawFooter();
 	}
-
+    //this function gives the detail of guest's checkin and checkout;
 	function edit($app_num='')
 	{
 		$this->auth_is('pce_da5');
@@ -73,7 +74,7 @@ class Guest_details extends MY_Controller {
 			{
 				$room_info = $this->edc_allotment_model->get_room_details($room_row['room_alloted']);
 				if($room_info)
-					$data['guest_details'][$sno]['rooms'][$i++] = ucfirst($room_info['building']).' - '.ucfirst($room_info['floor']).' - '.$room_info['room_no'].' - '.ucfirst($room_info['room_type']);
+				$data['guest_details'][$sno]['rooms'][$i++] = ucfirst($room_info['building']).' - '.ucfirst($room_info['floor']).' - '.$room_info['room_no'].' - '.ucfirst($room_info['room_type']);
 				else $data['guest_details'][$sno]['rooms'][$i++] = 'Room Info Unavailable!';
 			}
 			$sno++;
@@ -110,7 +111,7 @@ class Guest_details extends MY_Controller {
 		$this->drawFooter();
 
 	}
-
+     //this function works for guiest check in the room 
 	function insert_guest()
 	{
 		$this->auth_is('pce_da5');
@@ -127,7 +128,8 @@ class Guest_details extends MY_Controller {
   		//checking in before check in date is error
 		//this restriction is put because if any applicant checks in before his appointed time
 		//then there might be clashes with other bookings
-  		if(time() < strtotime($b_detail['check_in'])) {
+  		if(time() < strtotime($b_detail['check_in'])) 
+  		{
   			$this->session->set_flashdata('flashError', 'Checking In before Check In DateTime not allowed');
   			redirect('edc_booking/guest_details');
   		}
@@ -198,7 +200,7 @@ class Guest_details extends MY_Controller {
 		$this->session->set_flashdata('flashSuccess','Check In Successful.');
 		redirect('edc_booking/guest_details/edit/'.$this->input->post('app_num'));
 	}
-
+     // this function gives the detail of rent of room
 	function bill_total_sum($app_num, $name, $check_in) {
 		$rooms = $this->edc_booking_model->get_guest_rooms($app_num, $name, $check_in);
 		$room_details = array();
@@ -249,7 +251,7 @@ class Guest_details extends MY_Controller {
 		}
 		return $total_sum;
 	}
-
+       //this function works for generate the bill 
 	function generate_bill($app_num, $name, $check_in) {
 			$this->auth_is('pce_da5');
 
@@ -279,13 +281,15 @@ class Guest_details extends MY_Controller {
 			$data['school_guest'] = $booking_details['school_guest'];
 			$this->load->view('edc_booking/bill', $data);
 	}
-
+     //this function works for generate the receipt 
 	function generate_receipt($app_num, $name, $check_in) {
 		$this->auth_is('pce_da5');
 		//set guest payment data
 		$name = urldecode($name);
 		$check_in = urldecode($check_in);
 		$booking_details = $this->edc_booking_model->get_booking_details($app_num)[0];
+	//	 if($booking_details['purpose']===0)
+	//	 $booking_details['purpose']="personal";
 		$tariff = $this->edc_booking_model->get_tariff($app_num);
 
 		$total_sum = $this->bill_total_sum($app_num, $name, $check_in);
@@ -299,12 +303,15 @@ class Guest_details extends MY_Controller {
 		$sno = 0;
 		foreach($rooms as $room) {
 			$room_details[$sno] =  $this->edc_allotment_model->get_room_details($room['room_alloted']);
+
 			$room_details[$sno]['tariff'] = $tariff['double_'.strtolower($booking_details['purpose'])];
-			if($room_details[$sno]['room_type'] == 'Double Bedded AC'){
+			if($room_details[$sno]['room_type'] == 'Double Bedded AC')
+			{
 				$room_details[$sno]['tariff'] = $tariff['double_'.strtolower($booking_details['purpose'])];
 				$room_details[$sno]['single'] = $this->edc_booking_model->check_single_room($app_num, $name, $check_in, $room['room_alloted']);	//0 -> single in total (400/600), 1 -> single in group(200/300), 2 -> double in group (400/600)
 			}
-			else $room_details[$sno]['tariff'] = $tariff['suite_'.strtolower($booking_details['purpose'])];
+			else 
+			    $room_details[$sno]['tariff'] = $tariff['suite_'.strtolower($booking_details['purpose'])];
 			$sno++;
 		}
 		$data['rooms'] = $room_details;
@@ -312,7 +319,7 @@ class Guest_details extends MY_Controller {
 		$data['school_guest'] = $booking_details['school_guest'];
 		$this->load->view('edc_booking/bill_receipt', $data);
 	}
-
+     //this function works for guiest checkout and store the guiest detail
 	function add_checkout($app_num, $room_alloted, $guest_name) {
 		$this->auth_is('pce_da5');
 		$this->edc_booking_model->checkout($app_num,$room_alloted,$guest_name);
@@ -397,7 +404,7 @@ class Guest_details extends MY_Controller {
 			foreach($this->edc_booking_model->get_booking_details($data['app_num']) as $res)
 				$occupance_history['booking_history'][$key]['purpose'] = $res['purpose'];
 			//funds start
-			//for displaying funds
+			//for displaying funds	
 			$data = $this->edc_booking_model->get_group_details($data['app_num'], $data['name'], $data['check_in']); //returns app_num, name, designation, gender, address, email, contact, room_alloted, check_in and check_out, id_path
 			//get rooms for that group
 			$rooms = $this->edc_booking_model->get_guest_rooms($data['app_num'], $data['name'], $data['check_in']);
@@ -424,7 +431,7 @@ class Guest_details extends MY_Controller {
 		$this->load->view('edc_booking/room_booking_history_view',$occupance_history);
 		$this->drawFooter();
 	}
-
+     //add the new rooms in the old and extension building
 	function room_planning($building)
 	{
 		if($this->edc_allotment_model->no_of_rooms($building) === 1) {
@@ -475,7 +482,7 @@ class Guest_details extends MY_Controller {
 			$this->load->view('edc_booking/room_checkbox',$data);
 		}
 	}
-
+// show the guest detail
 	function show_guest_details($user_id, $app_num, $name, $check_in)
 	{
 		$this->auth_is('pce_da5');
