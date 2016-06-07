@@ -116,19 +116,13 @@ class Management extends MY_Controller
 		$checked_app = $this->edc_allotment_model->get_checked_app($room_id);
 		
 
-		//Get all bookings for the current room later in future .
-		
-		
-
-		$room_bookings = $this->edc_allotment_model->get_room_bookings($room_id);
+		//Get all bookings for the current room later in future which have not been cancelled.
+		$room_bookings = $this->edc_allotment_model->get_future_room_bookings($room_id);
 	
 		if($checked_app)
 			$data['checked_app'] = $this->edc_booking_model->get_booking_details($checked_app)[0];
 		else $data['checked_app'] = '';
-		/*echo "L";
-		echo $checked_app;
-		echo "F";
-		*/$i = 0;		
+		$i = 0;		
 		//Store the details of future bookings of a room in new array .
 		
 		foreach($room_bookings as $booking) {
@@ -140,7 +134,7 @@ class Management extends MY_Controller
 	}
 
 	function building_status($auth) {
-		$this->addJS('edc_booking/room_availability.js');
+		//Display the building status and the status of availability of rooms .
 		$data['auth'] = $auth;
 		
 		$this->drawHeader('Executive Development Center');
@@ -151,9 +145,8 @@ class Management extends MY_Controller
 	}
 
 	function load_building_status($building, $auth) {
-		//fetch all room data with current room holders, booked rooms
+		//Fetch all room data with current room holders, booked rooms .
 		//make all rooms a link which will show the application to which room is allotted
-//$this->addJS('edc_booking/room_availability.js');	
 		$data['auth'] = $auth;
 		$result_uavail_rooms = $this->edc_allotment_model->get_booked_rooms(date('Y-m-d H:i:s'));
 		$checked_in_rooms = $this->edc_allotment_model->get_checked_rooms();

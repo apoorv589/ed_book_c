@@ -63,7 +63,10 @@ class Booking extends MY_Controller
 			  	'boarding_required' => $this->input->post('boarding_required'),
 			  	'school_guest' => $this->input->post('school_guest')
 		);
-
+		if($data['pusrpose']==0)
+		{
+			$data['purpose']="personal";
+		}
 		$data['tariff'] = $this->edc_booking_model->get_current_tariff();
 		$checkin = $this->input->post('checkin').' '.$this->input->post('checkin_time');
 		$data['check_in'] = DateTime::createFromFormat('Y-m-d H:i A', $checkin)->format('Y-m-d H:i:s');

@@ -116,19 +116,13 @@ class Management extends MY_Controller
 		$checked_app = $this->edc_allotment_model->get_checked_app($room_id);
 		
 
-		//Get all bookings for the current room later in future .
-		
-		
-
+		//Get all bookings for the current room later in future which have not been cancelled.
 		$room_bookings = $this->edc_allotment_model->get_future_room_bookings($room_id);
 	
 		if($checked_app)
 			$data['checked_app'] = $this->edc_booking_model->get_booking_details($checked_app)[0];
 		else $data['checked_app'] = '';
-		/*echo "L";
-		echo $checked_app;
-		echo "F";
-		*/$i = 0;		
+		$i = 0;		
 		//Store the details of future bookings of a room in new array .
 		
 		foreach($room_bookings as $booking) {
@@ -140,7 +134,7 @@ class Management extends MY_Controller
 	}
 
 	function building_status($auth) {
-		$this->addJS('edc_booking/room_availability.js');
+		//Display the building status and the status of availability of rooms .
 		$data['auth'] = $auth;
 		
 		$this->drawHeader('Executive Development Center');
@@ -151,9 +145,8 @@ class Management extends MY_Controller
 	}
 
 	function load_building_status($building, $auth) {
-		//fetch all room data with current room holders, booked rooms
-		//make all rooms a link which will show the application to which room is allotted
-//$this->addJS('edc_booking/room_availability.js');	
+		//Fetch all room data with current room holders, booked rooms .
+		//Make all rooms a link which will show the application to which room is allotted .
 		$data['auth'] = $auth;
 		$result_uavail_rooms = $this->edc_allotment_model->get_booked_rooms(date('Y-m-d H:i:s'));
 		$checked_in_rooms = $this->edc_allotment_model->get_checked_rooms();
@@ -179,14 +172,14 @@ class Management extends MY_Controller
 				foreach($floor[0] as $row)
 				{
 					$flag=0; //free
-					foreach($result_uavail_rooms as $room_unavailable) //this can be optimized
+					foreach($result_uavail_rooms as $room_unavailable) 
 					{
 						if($row['id'] === $room_unavailable['room_id'])
-							$flag = 1; //booked
+							$flag = 1; //Rooms has been booked .
 					}
 					foreach($checked_in_rooms as $c_room) {
 						if($row['id'] === $c_room['room_id'])
-							$flag = 2; //checked
+							$flag = 2; //Room is currently checked in.
 					}
 					$data_array[$i][$sno][0] = $row['id'];
 					$data_array[$i][$sno][1] = $row['room_no'];
@@ -200,13 +193,13 @@ class Management extends MY_Controller
 
 			$data['building'] = $building;
 			$data['floor_room_array'] = $data_array;
-			$data['room_array'] = $this->edc_allotment_model->get_room_types(); //creates two sections for room types
+			$data['room_array'] = $this->edc_allotment_model->get_room_types(); //Creates two sections for room types .
 			$this->load->view('edc_booking/building_view', $data);
 		}
 	}
 
 	function add_form($building, $floor, $type)
-	{
+	{	//Load the view to add rooms .
 		$this->auth_is('pce_da5');
 		$data = array(
 			'building' => $building,
@@ -220,7 +213,7 @@ class Management extends MY_Controller
 	}
 
 	function add_rooms()
-	{
+	{	//Rooms are modified in the database .
 		$data = array(
 			'room_no' => $this->input->post('room_no'),
 			'building' => strtolower($this->input->post('building')),
@@ -235,13 +228,14 @@ class Management extends MY_Controller
 
 	function remove_rooms()
 	{
+		//Rooms are removed from the database .
 		$rooms = $this->input->post('checkbox_rooms');
 		$this->edc_allotment_model->remove_rooms($rooms);
 		redirect('edc_booking/management/room_management');
 	}
 
 	function block_rooms()
-	{
+	{	//Block rooms .
 		$rooms = $this->input->post('checkbox_rooms');
 		$remark = $this->input->post('remark');
 		$this->edc_allotment_model->block_rooms($rooms, $remark);
@@ -249,7 +243,7 @@ class Management extends MY_Controller
 	}
 
 	function unblock_rooms()
-	{
+	{	//Unblock rooms .
 		$rooms = $this->input->post('checkbox_rooms');
 		$this->edc_allotment_model->unblock_rooms($rooms);
 		redirect('edc_booking/management/room_management');
