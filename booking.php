@@ -1,6 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 /*
+New edit
 form ()
 insert_edc_registration_details ()
 track_status ()
